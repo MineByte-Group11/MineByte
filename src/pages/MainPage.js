@@ -1,7 +1,7 @@
-import React from 'react';
-import './MainPage.css';
+import React from "react";
+import "./MainPage.css";
 
-const MainPage = ({ username }) => (
+const MainPage = ({ username, firstName, lastName }) => (
   <div className="main-page">
     <div className="left-section">
       <h2>Welcome, {username}!</h2> {/* Display the username */}
