@@ -1,14 +1,11 @@
-// Register.js
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth"; // Import updateProfile to set first and last name
-import { auth, db } from "../firebase/firebaseConfig"; // Import the Firebase auth instance
-import "./Register.css"; // Optional: Your custom styles
-import { doc, setDoc } from "firebase/firestore"; // Import Firestore methods
-
-import "./Login.css";
 import { useNavigate } from "react-router-dom";
+import "./Register.css"; // Import the updated CSS
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../firebase/firebaseConfig";
+import { setDoc, doc } from "firebase/firestore";
 
-const Register = ({ onRegister }) => {
+const Register = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,31 +24,18 @@ const Register = ({ onRegister }) => {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const { uid } = userCredential.user;
+
+      // Save the user's data to Firestore
+      await setDoc(doc(db, "users", uid), {
+        firstName,
+        lastName,
         email,
-        password
-      );
+      });
 
-      // Check for success
-      if (userCredential.user) {
-        const { uid } = userCredential.user;
-
-        // Save first name and last name to Firestore
-        await setDoc(doc(db, "users", uid), {
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-        });
-
-        // Navigate to the login page after saving user data
-        navigate("/login");
-      }
+      navigate("/login"); // Redirect to login after registration
     } catch (error) {
-      // Log the error to understand what went wrong
-      console.error("Registration error:", error);
-
-      // Check for specific Firebase error codes and set the error message accordingly
       if (error.code === "auth/email-already-in-use") {
         setError("This email is already registered.");
       } else if (error.code === "auth/weak-password") {
@@ -59,76 +43,87 @@ const Register = ({ onRegister }) => {
       } else if (error.code === "auth/invalid-email") {
         setError("The email address is not valid.");
       } else {
-        // Fallback to showing the Firebase error message if it's a different error
-        setError(`Error: ${error.message}`);
+        setError(error.message);
       }
     }
   };
 
   return (
-    <div className="register-container">
-      <h2 className="register-title">Register</h2>
-      {error && <p className="error-message">{error}</p>}
-      <form className="register-form" onSubmit={handleRegister}>
-        <div className="form-group">
-          <label className="form-label">First Name</label>
-          <input
-            type="text"
-            className="form-input"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            placeholder="Enter your first name"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Last Name</label>
-          <input
-            type="text"
-            className="form-input"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            placeholder="Enter your last name"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Email</label>
-          <input
-            type="email"
-            className="form-input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Password</label>
-          <input
-            type="password"
-            className="form-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Confirm Password</label>
-          <input
-            type="password"
-            className="form-input"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm your password"
-            required
-          />
-        </div>
-        <button type="submit" className="register-button">
-          Register
-        </button>
-      </form>
+    <div className="register-page">
+      {/* Header with "MineByte" brand name and navigation links */}
+      <header className="header">
+        <a href="/" className="brand">MineByte</a>
+        <nav className="nav-links">
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </header>
+
+      <div className="register-container">
+        <h2 className="register-title">Sign Up</h2>
+        {error && <p className="error-message">{error}</p>}
+        <form onSubmit={handleRegister}>
+          <div className="form-group">
+            <label className="form-label">First Name</label>
+            <input
+              type="text"
+              className="form-input"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="First Name"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Last Name</label>
+            <input
+              type="text"
+              className="form-input"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Last Name"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              className="form-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Confirm Password</label>
+            <input
+              type="password"
+              className="form-input"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm Password"
+              required
+            />
+          </div>
+          <button type="submit" className="register-button">
+            Register
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
