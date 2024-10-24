@@ -12,11 +12,13 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState(""); // Success message state
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage(""); // Clear previous success messages
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -34,7 +36,14 @@ const Register = () => {
         email,
       });
 
-      navigate("/login"); // Redirect to login after registration
+      setSuccessMessage("Account created successfully! You can now login."); // Set success message
+
+      // Clear form fields after successful registration
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
         setError("This email is already registered.");
@@ -48,21 +57,28 @@ const Register = () => {
     }
   };
 
+  const handleLogin = () => {
+    navigate("/login"); // Navigate to the login page
+  };
+
   return (
     <div className="register-page">
       {/* Header with "MineByte" brand name and navigation links */}
       <header className="header">
         <a href="/" className="brand">MineByte</a>
         <nav className="nav-links">
-          <a href="/">Home</a>
           <a href="/about">About</a>
           <a href="/contact">Contact</a>
         </nav>
       </header>
 
+      {/* Main content for registration form */}
       <div className="register-container">
         <h2 className="register-title">Sign Up</h2>
+
         {error && <p className="error-message">{error}</p>}
+        {successMessage && <p className="success-message">{successMessage}</p>} {/* Display success message */}
+
         <form onSubmit={handleRegister}>
           <div className="form-group">
             <label className="form-label">First Name</label>
@@ -123,6 +139,13 @@ const Register = () => {
             Register
           </button>
         </form>
+
+        <div className="login-section">
+          <p>Already have an account?</p>
+          <button className="login-button" onClick={handleLogin}>
+            Login
+          </button>
+        </div>
       </div>
     </div>
   );
